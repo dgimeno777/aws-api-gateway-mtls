@@ -1,5 +1,5 @@
 variable "aws_profile" {
-  default = "api-gateway-mtls"
+  default = "aws_api_gateway_mtls"
 }
 
 variable "aws_region" {

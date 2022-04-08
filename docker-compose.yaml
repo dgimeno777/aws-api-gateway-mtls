@@ -1,0 +1,9 @@
+version: "3.9"
+
+services:
+  mtls_authorizer:
+    image: ${MTLS_AUTHORIZER_ECR_REPO_URI}:$USER
+    container_name: aws_api_gateway_mtls_authorizer
+    build:
+      dockerfile: Dockerfile
+      context: .
