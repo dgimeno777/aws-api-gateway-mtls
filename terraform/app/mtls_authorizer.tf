@@ -1,9 +1,11 @@
-data "aws_ecr_repository" "" {
-  name = ""
+data "aws_ecr_repository" "mtls_authorizer" {
+  name = var.mtls_authorizer_image.ecr_repo_name
 }
 
-data "aws_ecr_image" "" {
-  repository_name = data.aws_ecr_repository.
+data "aws_ecr_image" "mtls_authorizer" {
+  repository_name = data.aws_ecr_repository.mtls_authorizer
+  image_tag = var.mtls_authorizer_image.image_identifier_type == "TAG" ? var.mtls_authorizer_image.image_identifier : null
+  image_digest = var.mtls_authorizer_image.image_identifier_type == "SHA" ? var.mtls_authorizer_image.image_identifier : null
 }
 
 resource "aws_iam_role" "mtls_authorizer" {

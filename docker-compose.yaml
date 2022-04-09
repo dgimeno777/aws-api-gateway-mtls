@@ -4,6 +4,11 @@ services:
   mtls_authorizer:
     image: ${MTLS_AUTHORIZER_ECR_REPO_URI}:$USER
     container_name: aws_api_gateway_mtls_authorizer
+    platform: linux/arm64
+    user: ${UID}:${GID}
     build:
       dockerfile: Dockerfile
       context: .
+      target: mtls_authorizer
+    ports:
+      - "9000:8080"
