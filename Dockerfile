@@ -8,6 +8,7 @@ RUN yum update -y \
 
 # Add non-root user
 RUN useradd lambda
+USER lambda
 
 # Set workdir
 WORKDIR /home/lambda
@@ -28,11 +29,10 @@ RUN pip install poetry
 
 # Copy poetry files
 COPY ./mtls_authorizer/pyproject.toml ./
-COPY ./mtls_authorizer/poetry.toml ./
 COPY ./mtls_authorizer/poetry.lock ./
 
 # Install python dependencies
-RUN poetry config virtualenvs.in-project false \
+RUN poetry config virtualenvs.create false \
  && poetry install --no-interaction
 
 # Copy lambda files
@@ -43,10 +43,9 @@ COPY ./mtls_authorizer/lambda_entry_script.sh ./
 COPY ./mtls_authorizer/mtls_authorizer/ ./mtls_authorizer/
 
 # Recursive 755 permissions
+USER root
 RUN chmod -R 755 ./
-
-# Set user to lambda
 USER lambda
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "./lambda_entry_script.sh" ]
+ENTRYPOINT [ "./lambda_entry_script.sh"]

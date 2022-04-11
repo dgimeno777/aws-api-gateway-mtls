@@ -8,3 +8,6 @@
 .terraform/
 dgimeno.s3.tfbackend
 terraform.tfvars
+
+# Misc
+.DS_Store

@@ -12,3 +12,4 @@ services:
       target: mtls_authorizer
     ports:
       - "9000:8080"
+    command: mtls_authorizer.lambda_handler.lambda_handler
