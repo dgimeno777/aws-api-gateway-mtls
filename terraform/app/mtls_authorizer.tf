@@ -3,7 +3,7 @@ data "aws_ecr_repository" "mtls_authorizer" {
 }
 
 data "aws_ecr_image" "mtls_authorizer" {
-  repository_name = data.aws_ecr_repository.mtls_authorizer
+  repository_name = data.aws_ecr_repository.mtls_authorizer.name
   image_tag       = var.mtls_authorizer_image.image_identifier_type == "TAG" ? var.mtls_authorizer_image.image_identifier : null
   image_digest    = var.mtls_authorizer_image.image_identifier_type == "SHA" ? var.mtls_authorizer_image.image_identifier : null
 }
@@ -50,6 +50,7 @@ resource "aws_iam_policy" "mtls_authorizer" {
 resource "aws_lambda_function" "mtls_authorizer" {
   function_name = "mtls-authorizer-${local.resource_name_suffix}"
   role          = aws_iam_role.mtls_authorizer.arn
+  package_type  = "Image"
   image_uri     = local.mtls_authorizer_image_uri
   memory_size   = 512
 }
