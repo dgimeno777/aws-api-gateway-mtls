@@ -9,5 +9,8 @@
 dgimeno.s3.tfbackend
 terraform.tfvars
 
+# Certs
+certs/
+
 # Misc
 .DS_Store
