@@ -1,3 +1,4 @@
+import json
 from loguru import logger
 
 
@@ -8,3 +9,7 @@ def lambda_handler(event, context):
     :param context: the context
     """
     logger.info(f"Event: {event}")
+    return {
+        "statusCode": 200,
+        "body": json.dumps("hello response")
+    }
