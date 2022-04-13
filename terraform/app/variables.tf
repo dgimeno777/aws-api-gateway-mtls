@@ -26,7 +26,17 @@ variable "mtls_s3_bucket_name" {
   description = "MTLS S3 Bucket name"
 }
 
-variable "mtls_domain_acm_certificate_id" {
+variable "mtls_domain_name" {
   type        = string
-  description = "ID of the ACM Certificate for the MTLS API Gateway Domain"
+  description = "Name of the MTLS API Gateway Domain"
+}
+
+variable "ownership_verification_certificate_domain_name" {
+  type        = string
+  description = "Name of the Ownership Certificate Domain Name"
+}
+
+variable "hosted_zone_id" {
+  type        = string
+  description = "ID of Route53 Hosted Zone for the MTLS Custom Domain"
 }
