@@ -1,4 +1,5 @@
 resource "aws_wafregional_web_acl_association" "mtls" {
+  depends_on   = [aws_api_gateway_stage.mtls]
   resource_arn = aws_api_gateway_stage.mtls.arn
   web_acl_id   = aws_wafregional_web_acl.mtls.id
 }

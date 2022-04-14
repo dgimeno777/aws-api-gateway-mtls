@@ -5,29 +5,10 @@ resource "aws_api_gateway_rest_api" "mtls" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
-
-  body = jsonencode({
-    openapi = "3.0.1"
-    info = {
-      title   = "AGWMTLS"
-      version = "1.0"
-    }
-    paths = {
-      "/path1" = {
-        get = {
-          x-amazon-apigateway-integration = {
-            httpMethod           = "GET"
-            payloadFormatVersion = "1.0"
-            type                 = "HTTP_PROXY"
-            uri                  = "https://ip-ranges.amazonaws.com/ip-ranges.json"
-          }
-        }
-      }
-    }
-  })
 }
 
 resource "aws_api_gateway_deployment" "mtls" {
+  depends_on  = [aws_api_gateway_method.mtls_path1]
   rest_api_id = aws_api_gateway_rest_api.mtls.id
 
   triggers = {
@@ -47,11 +28,13 @@ resource "aws_api_gateway_stage" "mtls" {
 }
 
 resource "aws_api_gateway_authorizer" "mtls" {
-  name                   = "mtls-${local.resource_name_suffix}"
-  type                   = "REQUEST"
-  rest_api_id            = aws_api_gateway_rest_api.mtls.id
-  authorizer_uri         = aws_lambda_function.mtls_authorizer.invoke_arn
-  authorizer_credentials = aws_iam_role.mtls_authorizer.arn
+  name                             = "mtls-${local.resource_name_suffix}"
+  type                             = "REQUEST"
+  rest_api_id                      = aws_api_gateway_rest_api.mtls.id
+  authorizer_uri                   = aws_lambda_function.mtls_authorizer.invoke_arn
+  authorizer_credentials           = aws_iam_role.mtls_authorizer.arn
+  authorizer_result_ttl_in_seconds = 0
+  identity_source                  = "identity.clientCert.clientCertPem"
 }
 
 resource "aws_api_gateway_domain_name" "mtls" {
@@ -85,4 +68,28 @@ resource "aws_api_gateway_base_path_mapping" "mtls" {
   api_id      = aws_api_gateway_rest_api.mtls.id
   stage_name  = aws_api_gateway_stage.mtls.stage_name
   domain_name = aws_api_gateway_domain_name.mtls.domain_name
+}
+
+resource "aws_api_gateway_resource" "mtls_path1" {
+  parent_id   = aws_api_gateway_rest_api.mtls.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.mtls.id
+  path_part   = "path1"
+}
+
+resource "aws_api_gateway_method" "mtls_path1" {
+  rest_api_id   = aws_api_gateway_rest_api.mtls.id
+  resource_id   = aws_api_gateway_resource.mtls_path1.id
+  http_method   = "GET"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.mtls.id
+}
+
+resource "aws_api_gateway_integration" "mtls_path1" {
+  rest_api_id = aws_api_gateway_rest_api.mtls.id
+  resource_id = aws_api_gateway_resource.mtls_path1.id
+  http_method = aws_api_gateway_method.mtls_path1.http_method
+
+  integration_http_method = "ANY"
+  type                    = "HTTP_PROXY"
+  uri                     = "https://ip-ranges.amazonaws.com/ip-ranges.json"
 }
