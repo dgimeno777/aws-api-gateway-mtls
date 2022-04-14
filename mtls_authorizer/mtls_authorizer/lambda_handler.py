@@ -2,6 +2,8 @@ import json
 from loguru import logger
 
 
+AUTH_POLICY_VERSION = "2012-10-17"
+
 def lambda_handler(event, context):
     """
     Handles an AWS Lambda request
@@ -9,7 +11,16 @@ def lambda_handler(event, context):
     :param context: the context
     """
     logger.info(f"Event: {event}")
-    return {
-        "statusCode": 200,
-        "body": json.dumps("hello response")
+    logger.info(f"Context: {context}")
+
+    auth_policy = {
+        "context": context,
+        "principalId": "",
+        "policyDocument": {
+            "Version": AUTH_POLICY_VERSION,
+            "Statement": []
+        }
     }
+
+
+    return auth_policy
