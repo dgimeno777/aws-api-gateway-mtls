@@ -34,7 +34,7 @@ resource "aws_api_gateway_authorizer" "mtls" {
   authorizer_uri                   = aws_lambda_function.mtls_authorizer.invoke_arn
   authorizer_credentials           = aws_iam_role.mtls_authorizer.arn
   authorizer_result_ttl_in_seconds = 0
-  identity_source                  = "identity.clientCert.clientCertPem"
+  identity_source                  = "context.identity.clientCert.clientCertPem"
 }
 
 resource "aws_api_gateway_domain_name" "mtls" {
