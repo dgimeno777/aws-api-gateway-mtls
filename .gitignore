@@ -4,8 +4,9 @@ mtls_authorizer/.env
 # IntelliJ
 .idea/
 
-# Poetry
+# Python
 .venv/
+__pycache__/
 
 # Terraform
 .terraform/
