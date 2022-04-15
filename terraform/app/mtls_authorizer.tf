@@ -90,9 +90,10 @@ resource "aws_lambda_function" "mtls_authorizer" {
   depends_on    = [aws_cloudwatch_log_group.mtls_authorizer]
   function_name = "mtls-authorizer-${local.resource_name_suffix}"
   role          = aws_iam_role.mtls_authorizer_lambda.arn
+  image_uri     = local.mtls_authorizer_image_uri
   package_type  = "Image"
   memory_size   = 512
-  image_uri     = local.mtls_authorizer_image_uri
+  architectures = ["x86_64"]
 
   image_config {
     working_directory = "/home/lambda"

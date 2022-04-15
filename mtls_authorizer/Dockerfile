@@ -28,19 +28,19 @@ RUN pip install --upgrade pip
 RUN pip install poetry
 
 # Copy poetry files
-COPY ./mtls_authorizer/pyproject.toml ./
-COPY ./mtls_authorizer/poetry.lock ./
+COPY pyproject.toml ./
+COPY poetry.lock ./
 
 # Install python dependencies
 RUN poetry config virtualenvs.create false \
  && poetry install --no-interaction
 
 # Copy lambda files
-ADD https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie-arm64 ./aws-lambda-rie
-COPY ./mtls_authorizer/lambda_entry_script.sh ./
+ADD https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie ./aws-lambda-rie
+COPY lambda_entry_script.sh ./
 
 # Copy function code
-COPY ./mtls_authorizer/mtls_authorizer/ ./mtls_authorizer/
+COPY mtls_authorizer ./mtls_authorizer/
 
 # Recursive 755 permissions
 USER root

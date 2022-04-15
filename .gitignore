@@ -1,8 +1,11 @@
 # Environment Variables
-.env
+mtls_authorizer/.env
 
 # IntelliJ
 .idea/
+
+# Poetry
+.venv/
 
 # Terraform
 .terraform/
