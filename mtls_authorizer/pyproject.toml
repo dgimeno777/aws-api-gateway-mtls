@@ -6,7 +6,7 @@ authors = ["Daniel Gimeno <dgimeno777@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-cryptography = "^36.0.2"
+cryptography = {path = "wheels/cryptography-37.0.0.dev1-cp310-cp310-linux_x86_64.whl"}
 loguru = "^0.6.0"
 awslambdaric = "^2.0.2"
 requests = "^2.27.1"

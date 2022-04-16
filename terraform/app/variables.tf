@@ -40,3 +40,8 @@ variable "hosted_zone_id" {
   type        = string
   description = "ID of Route53 Hosted Zone for the MTLS Custom Domain"
 }
+
+variable "truststore_local_filepath" {
+  type = string
+  description = "Local filepath of the truststore"
+}

@@ -5,7 +5,7 @@ data "aws_s3_bucket" "mtls" {
 resource "aws_s3_object" "mtls_ca_truststore" {
   bucket = data.aws_s3_bucket.mtls.bucket
   key    = "aws-api-gateway-mtls/ca_cert.pem"
-  source = "${path.module}/../../certs/ca/ca_truststore.pem"
+  source = var.truststore_local_filepath
 }
 
 locals {
