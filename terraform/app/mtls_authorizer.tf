@@ -96,7 +96,7 @@ resource "aws_lambda_function" "mtls_authorizer" {
   architectures = ["x86_64"]
 
   image_config {
-    working_directory = "/home/lambda"
+    working_directory = "/src"
     command           = ["mtls_authorizer.lambda_handler.lambda_handler"]
   }
 }
