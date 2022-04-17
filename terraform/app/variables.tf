@@ -46,7 +46,12 @@ variable "truststore_local_filepath" {
   description = "Local filepath of the truststore"
 }
 
-variable "whitelisted_ipv4_cidr_blocks" {
+variable "waf_whitelisted_ipv4_cidr_blocks" {
   type        = list(string)
-  description = "IPv4 CIDR Blocks to whitelist on the API Gateway"
+  description = "IPv4 CIDR Blocks to whitelist on the API Gateway WAF"
+}
+
+variable "waf_whitelisted_country_codes" {
+  type        = list(string)
+  description = "Country codes to whitelist on the API Gateway WAF"
 }

@@ -21,8 +21,17 @@ resource "aws_wafv2_web_acl" "mtls" {
       allow {}
     }
     statement {
-      ip_set_reference_statement {
-        arn = aws_wafv2_ip_set.mtls.arn
+      and_statement {
+        statement {
+          ip_set_reference_statement {
+            arn = aws_wafv2_ip_set.mtls.arn
+          }
+        }
+        statement {
+          geo_match_statement {
+            country_codes = var.waf_whitelisted_country_codes
+          }
+        }
       }
     }
     visibility_config {
@@ -37,5 +46,5 @@ resource "aws_wafv2_ip_set" "mtls" {
   name               = "mtls-${local.resource_name_suffix}"
   scope              = "REGIONAL"
   ip_address_version = "IPV4"
-  addresses          = var.whitelisted_ipv4_cidr_blocks
+  addresses          = var.waf_whitelisted_ipv4_cidr_blocks
 }
