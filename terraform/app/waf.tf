@@ -1,42 +1,41 @@
-resource "aws_wafregional_web_acl_association" "mtls" {
-  depends_on   = [aws_api_gateway_stage.mtls]
+resource "aws_wafv2_web_acl_association" "mtls" {
   resource_arn = aws_api_gateway_stage.mtls.arn
-  web_acl_id   = aws_wafregional_web_acl.mtls.id
+  web_acl_arn  = aws_wafv2_web_acl.mtls.arn
 }
 
-resource "aws_wafregional_web_acl" "mtls" {
-  metric_name = "AGWMTLSIPSet"
-  name        = "mtls-${local.resource_name_suffix}"
-
+resource "aws_wafv2_web_acl" "mtls" {
+  name  = "mtls-${local.resource_name_suffix}"
+  scope = "REGIONAL"
+  visibility_config {
+    metric_name                = "AgwMtls"
+    cloudwatch_metrics_enabled = false
+    sampled_requests_enabled   = false
+  }
   default_action {
-    type = "BLOCK"
+    block {}
   }
-
   rule {
-    action {
-      type = "ALLOW"
-    }
+    name     = "rule-100"
     priority = 100
-    rule_id  = aws_wafregional_rule.mtls.id
+    action {
+      allow {}
+    }
+    statement {
+      ip_set_reference_statement {
+        arn = aws_wafv2_ip_set.mtls.arn
+      }
+    }
+    visibility_config {
+      metric_name                = "AgwMtlsIPSet"
+      cloudwatch_metrics_enabled = false
+      sampled_requests_enabled   = false
+    }
   }
 }
 
-resource "aws_wafregional_rule" "mtls" {
-  metric_name = "AGWMTLSIPSet"
-  name        = "mtls-ip-${local.resource_name_suffix}"
-
-  predicate {
-    data_id = aws_wafregional_ipset.mtls.id
-    negated = false
-    type    = "IPMatch"
-  }
-}
-
-resource "aws_wafregional_ipset" "mtls" {
-  name = "mtls-ipset-${local.resource_name_suffix}"
-
-  ip_set_descriptor {
-    type  = "IPV4"
-    value = local.my_public_ip_cidr_block
-  }
+resource "aws_wafv2_ip_set" "mtls" {
+  name               = "mtls-${local.resource_name_suffix}"
+  scope              = "REGIONAL"
+  ip_address_version = "IPV4"
+  addresses          = var.whitelisted_ipv4_cidr_blocks
 }

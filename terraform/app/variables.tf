@@ -42,6 +42,11 @@ variable "hosted_zone_id" {
 }
 
 variable "truststore_local_filepath" {
-  type = string
+  type        = string
   description = "Local filepath of the truststore"
+}
+
+variable "whitelisted_ipv4_cidr_blocks" {
+  type        = list(string)
+  description = "IPv4 CIDR Blocks to whitelist on the API Gateway"
 }
