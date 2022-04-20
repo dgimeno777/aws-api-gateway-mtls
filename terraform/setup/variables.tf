@@ -1,3 +1,7 @@
+locals {
+  resource_name_suffix = terraform.workspace
+}
+
 variable "aws_profile" {
   default = "aws_api_gateway_mtls"
 }
