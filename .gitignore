@@ -1,5 +1,5 @@
 # Environment Variables
-mtls_authorizer/.env
+.env
 
 # IntelliJ
 .idea/
