@@ -12,6 +12,4 @@ services:
       target: mtls_authorizer
     ports:
       - "9000:8080"
-    environment:
-      - AWS_REGION=${AWS_REGION}
     command: mtls_authorizer.lambda_handler.lambda_handler

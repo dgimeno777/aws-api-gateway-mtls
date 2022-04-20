@@ -1,11 +1,14 @@
 import ssl
-import base64
 import requests
 from loguru import logger
+from base64 import b64encode
 from urllib.parse import urljoin
-from cryptography import x509
-from cryptography.x509 import ocsp, Certificate
-from cryptography.x509.ocsp import OCSPResponseStatus, OCSPCertStatus
+from cryptography.x509 import Certificate, load_pem_x509_certificate
+from cryptography.x509.ocsp import (
+    OCSPCertStatus,
+    OCSPRequestBuilder,
+    load_der_ocsp_response
+)
 from cryptography.x509.oid import ExtensionOID, AuthorityInformationAccessOID
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -18,7 +21,7 @@ def convert_pem_to_x509(cert_pem: str) -> Certificate:
     :param cert_pem: the certificate in the PEM format
     :return: the certificate as a cryptography x509 object
     """
-    return x509.load_pem_x509_certificate(cert_pem.encode('ascii'), default_backend())
+    return load_pem_x509_certificate(cert_pem.encode('ascii'), default_backend())
 
 
 def convert_der_to_pem(cert_der) -> str:
@@ -39,7 +42,7 @@ def get_ca_issuer_url(cert: Certificate) -> str:
     aia = cert.extensions.get_extension_for_oid(ExtensionOID.AUTHORITY_INFORMATION_ACCESS).value
     issuers = [ia for ia in aia if ia.access_method == AuthorityInformationAccessOID.CA_ISSUERS]
     if not issuers:
-        raise Exception(f'no issuers entry in AIA')
+        raise Exception('No issuers entry in AIA')
     return issuers[0].access_location.value
 
 
@@ -52,7 +55,7 @@ def get_ocsp_server_url(cert: Certificate) -> str:
     aia = cert.extensions.get_extension_for_oid(ExtensionOID.AUTHORITY_INFORMATION_ACCESS).value
     ocsp_servers = [ia for ia in aia if ia.access_method == AuthorityInformationAccessOID.OCSP]
     if not ocsp_servers:
-        raise Exception(f'no ocsp server entry in AIA')
+        raise Exception('No ocsp server entry in AIA')
     return ocsp_servers[0].access_location.value
 
 
@@ -78,10 +81,10 @@ def build_ocsp_request(ocsp_server_url: str, cert: Certificate, issuer_cert: Cer
     :param issuer_cert: the cert of the issuer CA
     :return:
     """
-    builder = ocsp.OCSPRequestBuilder()
+    builder = OCSPRequestBuilder()
     builder = builder.add_certificate(cert, issuer_cert, SHA256())
     req = builder.build()
-    req_path = base64.b64encode(req.public_bytes(serialization.Encoding.DER))
+    req_path = b64encode(req.public_bytes(serialization.Encoding.DER))
     return urljoin(ocsp_server_url + '/', req_path.decode('ascii'))
 
 
@@ -96,7 +99,7 @@ def do_ocsp_request(ocsp_server_url: str, cert: Certificate, issuer_cert: Certif
     ocsp_resp = requests.get(build_ocsp_request(ocsp_server_url, cert, issuer_cert))
     if ocsp_resp.ok:
         logger.info(f'OCSP Response: {convert_der_to_pem(ocsp_resp.content)}')
-        ocsp_decoded = ocsp.load_der_ocsp_response(ocsp_resp.content)
+        ocsp_decoded = load_der_ocsp_response(ocsp_resp.content)
         for response in ocsp_decoded.responses:
             if response.certificate_status == OCSPCertStatus.GOOD:
                 return response.certificate_status
