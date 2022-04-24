@@ -7,6 +7,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
+    ports:
+      - "3000:3000"
   web_prod:
     image: ${WEB_PROD_ECR_REPO_URI}:${USER}
     build:

@@ -1,3 +1,13 @@
+resource "aws_vpc_endpoint" "s3" {
+  service_name        = "com.amazonaws.${var.aws_region}.s3"
+  vpc_endpoint_type   = "Gateway"
+  vpc_id              = data.aws_vpc.web.id
+  private_dns_enabled = false
+  route_table_ids = [
+    data.aws_route_table.web.id
+  ]
+}
+
 resource "aws_security_group" "vpce" {
   name   = "${local.resource_name_prefix}-vpce-${local.resource_name_suffix}"
   vpc_id = data.aws_vpc.web.id

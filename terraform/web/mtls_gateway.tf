@@ -14,10 +14,11 @@ resource "aws_api_gateway_integration" "mtls_gateway" {
   rest_api_id             = module.mtls_gateway.api_gateway_id
   resource_id             = module.mtls_gateway.proxy_resource_id
   http_method             = module.mtls_gateway.proxy_method
-  type                    = "HTTP"
+  type                    = "HTTP_PROXY"
   connection_type         = "VPC_LINK"
   connection_id           = aws_api_gateway_vpc_link.mtls_gateway.id
   integration_http_method = "ANY"
+  uri                     = "http://${aws_lb.mtls_gateway.dns_name}"
 }
 
 resource "aws_api_gateway_vpc_link" "mtls_gateway" {
@@ -39,7 +40,7 @@ resource "aws_lb" "mtls_gateway" {
 resource "aws_lb_target_group" "mtls_gateway" {
   name        = "${local.resource_name_prefix}-${local.resource_name_suffix}"
   port        = 3000
-  protocol    = "HTTP"
+  protocol    = "TCP"
   target_type = "ip"
   vpc_id      = data.aws_vpc.web.id
 }

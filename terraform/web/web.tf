@@ -23,7 +23,7 @@ resource "aws_ecs_task_definition" "web" {
   memory                   = 512
   container_definitions = jsonencode([
     {
-      name      = "mtls-web"
+      name      = "${local.resource_name_prefix}-${local.resource_name_suffix}"
       image     = local.web_image_uri
       cpu       = 256
       memory    = 512
@@ -56,7 +56,7 @@ resource "aws_ecs_service" "web" {
   load_balancer {
     target_group_arn = aws_lb_target_group.mtls_gateway.arn
     container_name   = aws_ecs_task_definition.web.family
-    container_port   = 80
+    container_port   = 3000
   }
 }
 
@@ -65,8 +65,8 @@ resource "aws_security_group" "web" {
   vpc_id = data.aws_vpc.web.id
   ingress {
     protocol  = "tcp"
-    from_port = 80
-    to_port   = 80
+    from_port = 3000
+    to_port   = 3000
     cidr_blocks = [
       "0.0.0.0/0"
     ]
