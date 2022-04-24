@@ -8,7 +8,7 @@ resource "aws_api_gateway_rest_api" "mtls" {
 }
 
 resource "aws_api_gateway_deployment" "mtls" {
-  depends_on  = [aws_api_gateway_method.mtls_path1]
+  depends_on  = [aws_api_gateway_method.mtls_proxy]
   rest_api_id = aws_api_gateway_rest_api.mtls.id
 
   triggers = {
@@ -70,26 +70,16 @@ resource "aws_api_gateway_base_path_mapping" "mtls" {
   domain_name = aws_api_gateway_domain_name.mtls.domain_name
 }
 
-resource "aws_api_gateway_resource" "mtls_path1" {
+resource "aws_api_gateway_resource" "mtls_proxy" {
   parent_id   = aws_api_gateway_rest_api.mtls.root_resource_id
   rest_api_id = aws_api_gateway_rest_api.mtls.id
-  path_part   = "path1"
+  path_part   = "{proxy+}"
 }
 
-resource "aws_api_gateway_method" "mtls_path1" {
+resource "aws_api_gateway_method" "mtls_proxy" {
   rest_api_id   = aws_api_gateway_rest_api.mtls.id
-  resource_id   = aws_api_gateway_resource.mtls_path1.id
-  http_method   = "GET"
+  resource_id   = aws_api_gateway_resource.mtls_proxy.id
+  http_method   = "ANY"
   authorization = "CUSTOM"
   authorizer_id = aws_api_gateway_authorizer.mtls.id
-}
-
-resource "aws_api_gateway_integration" "mtls_path1" {
-  rest_api_id = aws_api_gateway_rest_api.mtls.id
-  resource_id = aws_api_gateway_resource.mtls_path1.id
-  http_method = aws_api_gateway_method.mtls_path1.http_method
-
-  integration_http_method = "ANY"
-  type                    = "HTTP_PROXY"
-  uri                     = "https://ip-ranges.amazonaws.com/ip-ranges.json"
 }
