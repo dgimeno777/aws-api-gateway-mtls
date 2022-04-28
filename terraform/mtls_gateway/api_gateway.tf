@@ -8,11 +8,18 @@ resource "aws_api_gateway_rest_api" "mtls" {
 }
 
 resource "aws_api_gateway_deployment" "mtls" {
-  depends_on  = [aws_api_gateway_method.mtls_proxy]
+  depends_on = [
+    aws_api_gateway_integration.mtls_root_path,
+    aws_api_gateway_integration.mtls_proxy
+  ]
   rest_api_id = aws_api_gateway_rest_api.mtls.id
 
   triggers = {
     redeployment = sha1(jsonencode(aws_api_gateway_rest_api.mtls.body))
+  }
+
+  variables = {
+    resources = join(", ", [aws_api_gateway_resource.mtls_proxy.id])
   }
 
   lifecycle {
@@ -52,7 +59,7 @@ resource "aws_api_gateway_domain_name" "mtls" {
   }
 }
 
-resource "aws_route53_record" "example" {
+resource "aws_route53_record" "mtls" {
   name    = aws_api_gateway_domain_name.mtls.domain_name
   type    = "A"
   zone_id = data.aws_route53_zone.mtls.id
@@ -70,6 +77,36 @@ resource "aws_api_gateway_base_path_mapping" "mtls" {
   domain_name = aws_api_gateway_domain_name.mtls.domain_name
 }
 
+resource "aws_api_gateway_vpc_link" "mtls" {
+  name = "mtls-${local.resource_name_suffix}"
+  target_arns = [
+    data.aws_lb.mtls.arn
+  ]
+}
+
+data "aws_lb" "mtls" {
+  arn = var.nlb_arn
+}
+
+resource "aws_api_gateway_method" "mtls_root_path" {
+  rest_api_id   = aws_api_gateway_rest_api.mtls.id
+  resource_id   = aws_api_gateway_rest_api.mtls.root_resource_id
+  http_method   = "ANY"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.mtls.id
+}
+
+resource "aws_api_gateway_integration" "mtls_root_path" {
+  rest_api_id             = aws_api_gateway_rest_api.mtls.id
+  resource_id             = aws_api_gateway_rest_api.mtls.root_resource_id
+  http_method             = aws_api_gateway_method.mtls_root_path.http_method
+  type                    = "HTTP_PROXY"
+  connection_type         = "VPC_LINK"
+  connection_id           = aws_api_gateway_vpc_link.mtls.id
+  integration_http_method = "ANY"
+  uri                     = "http://${data.aws_lb.mtls.dns_name}/"
+}
+
 resource "aws_api_gateway_resource" "mtls_proxy" {
   parent_id   = aws_api_gateway_rest_api.mtls.root_resource_id
   rest_api_id = aws_api_gateway_rest_api.mtls.id
@@ -82,4 +119,24 @@ resource "aws_api_gateway_method" "mtls_proxy" {
   http_method   = "ANY"
   authorization = "CUSTOM"
   authorizer_id = aws_api_gateway_authorizer.mtls.id
+  request_parameters = {
+    "method.request.path.proxy" = true
+  }
+}
+
+resource "aws_api_gateway_integration" "mtls_proxy" {
+  rest_api_id             = aws_api_gateway_rest_api.mtls.id
+  resource_id             = aws_api_gateway_resource.mtls_proxy.id
+  http_method             = aws_api_gateway_method.mtls_proxy.http_method
+  type                    = "HTTP_PROXY"
+  connection_type         = "VPC_LINK"
+  connection_id           = aws_api_gateway_vpc_link.mtls.id
+  integration_http_method = "ANY"
+  uri                     = "http://${data.aws_lb.mtls.dns_name}/{proxy}"
+  cache_key_parameters = [
+    "method.request.path.proxy",
+  ]
+  request_parameters = {
+    "integration.request.path.proxy" = "method.request.path.proxy"
+  }
 }

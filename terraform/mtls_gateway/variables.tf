@@ -55,3 +55,8 @@ variable "waf_whitelisted_country_codes" {
   type        = list(string)
   description = "Country codes to whitelist on the API Gateway WAF"
 }
+
+variable "nlb_arn" {
+  type        = string
+  description = "ARN of the NLB for the API Gateway VPC Link Integration"
+}
