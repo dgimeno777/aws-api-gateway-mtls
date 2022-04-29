@@ -18,7 +18,6 @@ RUN pip install --upgrade pip \
  && pip install poetry
 
 # Copy poetry files
-COPY ./wheels/ ./wheels/
 COPY pyproject.toml poetry.lock ./
 
 # Install python dependencies

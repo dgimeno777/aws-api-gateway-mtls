@@ -8,7 +8,7 @@ module "mtls_gateway" {
   waf_whitelisted_country_codes                  = var.mtls_gateway.waf_whitelisted_country_codes
   mtls_authorizer_image                          = var.mtls_gateway.mtls_authorizer_image
   mtls_s3_bucket_name                            = var.mtls_gateway.mtls_s3_bucket_name
-  nlb_arn                                        = aws_lb.mtls_gateway.arn
+  internal_nlb_arn                               = aws_lb.mtls_gateway.arn
 }
 
 resource "aws_lb" "mtls_gateway" {

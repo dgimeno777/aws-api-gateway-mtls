@@ -10,16 +10,14 @@ resource "aws_api_gateway_rest_api" "mtls" {
 resource "aws_api_gateway_deployment" "mtls" {
   depends_on = [
     aws_api_gateway_integration.mtls_root_path,
-    aws_api_gateway_integration.mtls_proxy
+    aws_api_gateway_integration.mtls_proxy,
+    aws_api_gateway_authorizer.mtls,
   ]
   rest_api_id = aws_api_gateway_rest_api.mtls.id
 
   triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.mtls.body))
-  }
-
-  variables = {
-    resources = join(", ", [aws_api_gateway_resource.mtls_proxy.id])
+    redeployment              = sha1(jsonencode(aws_api_gateway_rest_api.mtls.body))
+    mtls_authorizer_image_uri = local.mtls_authorizer_image_uri
   }
 
   lifecycle {
@@ -82,10 +80,6 @@ resource "aws_api_gateway_vpc_link" "mtls" {
   target_arns = [
     data.aws_lb.mtls.arn
   ]
-}
-
-data "aws_lb" "mtls" {
-  arn = var.nlb_arn
 }
 
 resource "aws_api_gateway_method" "mtls_root_path" {

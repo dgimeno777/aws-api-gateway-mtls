@@ -1,11 +1,17 @@
-resource "aws_vpc_endpoint" "s3" {
-  service_name        = "com.amazonaws.${var.aws_region}.s3"
-  vpc_endpoint_type   = "Gateway"
-  vpc_id              = data.aws_vpc.web.id
-  private_dns_enabled = false
-  route_table_ids = [
-    data.aws_route_table.web.id
+locals {
+  vpce_interface_services = [
+    "ecs",
+    "ecs-agent",
+    "ecs-telemetry",
+    "ecr.dkr",
+    "ecr.api",
   ]
+}
+
+data "aws_vpc_endpoint_service" "interface_services" {
+  for_each     = toset(local.vpce_interface_services)
+  service      = each.key
+  service_type = "Interface"
 }
 
 resource "aws_security_group" "vpce" {
@@ -29,9 +35,10 @@ resource "aws_security_group" "vpce" {
   }
 }
 
-resource "aws_vpc_endpoint" "ecs" {
+resource "aws_vpc_endpoint" "interface_services" {
+  for_each            = data.aws_vpc_endpoint_service.interface_services
   vpc_id              = data.aws_vpc.web.id
-  service_name        = "com.amazonaws.${var.aws_region}.ecs"
+  service_name        = each.value.service_name
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
 
@@ -43,58 +50,12 @@ resource "aws_vpc_endpoint" "ecs" {
   ]
 }
 
-resource "aws_vpc_endpoint" "ecs_agent" {
+resource "aws_vpc_endpoint" "s3" {
+  service_name        = "com.amazonaws.${var.aws_region}.s3"
+  vpc_endpoint_type   = "Gateway"
   vpc_id              = data.aws_vpc.web.id
-  service_name        = "com.amazonaws.${var.aws_region}.ecs-agent"
-  vpc_endpoint_type   = "Interface"
-  private_dns_enabled = true
-
-  subnet_ids = [
-    data.aws_subnet.web.id
-  ]
-  security_group_ids = [
-    aws_security_group.vpce.id
-  ]
-}
-
-resource "aws_vpc_endpoint" "ecs_telemetry" {
-  vpc_id              = data.aws_vpc.web.id
-  service_name        = "com.amazonaws.${var.aws_region}.ecs-telemetry"
-  vpc_endpoint_type   = "Interface"
-  private_dns_enabled = true
-
-  subnet_ids = [
-    data.aws_subnet.web.id
-  ]
-  security_group_ids = [
-    aws_security_group.vpce.id
-  ]
-}
-
-resource "aws_vpc_endpoint" "ecr_dkr" {
-  vpc_id              = data.aws_vpc.web.id
-  service_name        = "com.amazonaws.${var.aws_region}.ecr.dkr"
-  vpc_endpoint_type   = "Interface"
-  private_dns_enabled = true
-
-  subnet_ids = [
-    data.aws_subnet.web.id
-  ]
-  security_group_ids = [
-    aws_security_group.vpce.id
-  ]
-}
-
-resource "aws_vpc_endpoint" "ecr_api" {
-  vpc_id              = data.aws_vpc.web.id
-  service_name        = "com.amazonaws.${var.aws_region}.ecr.api"
-  vpc_endpoint_type   = "Interface"
-  private_dns_enabled = true
-
-  subnet_ids = [
-    data.aws_subnet.web.id
-  ]
-  security_group_ids = [
-    aws_security_group.vpce.id
+  private_dns_enabled = false
+  route_table_ids = [
+    data.aws_route_table.web.id
   ]
 }

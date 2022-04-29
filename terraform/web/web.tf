@@ -2,18 +2,6 @@ resource "aws_ecs_cluster" "web" {
   name = "${local.resource_name_prefix}-${local.resource_name_suffix}"
 }
 
-resource "aws_ecs_cluster_capacity_providers" "example" {
-  cluster_name = aws_ecs_cluster.web.name
-
-  capacity_providers = ["FARGATE"]
-
-  default_capacity_provider_strategy {
-    base              = 1
-    weight            = 100
-    capacity_provider = "FARGATE"
-  }
-}
-
 resource "aws_ecs_task_definition" "web" {
   family                   = "${local.resource_name_prefix}-${local.resource_name_suffix}"
   execution_role_arn       = aws_iam_role.web_service_execution.arn
@@ -69,7 +57,7 @@ resource "aws_security_group" "web" {
     from_port = 3000
     to_port   = 3000
     cidr_blocks = [
-      "0.0.0.0/0"
+      data.aws_subnet.web.cidr_block
     ]
   }
   egress {

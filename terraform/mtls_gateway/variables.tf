@@ -3,13 +3,15 @@ locals {
 }
 
 variable "aws_profile" {
-  type    = string
-  default = "aws_api_gateway_mtls"
+  type        = string
+  description = "AWS Profile"
+  default     = "aws_api_gateway_mtls"
 }
 
 variable "aws_region" {
-  type    = string
-  default = "us-east-1"
+  type        = string
+  description = "AWS Region"
+  default     = "us-east-1"
 }
 
 variable "mtls_authorizer_image" {
@@ -56,7 +58,7 @@ variable "waf_whitelisted_country_codes" {
   description = "Country codes to whitelist on the API Gateway WAF"
 }
 
-variable "nlb_arn" {
+variable "internal_nlb_arn" {
   type        = string
   description = "ARN of the NLB for the API Gateway VPC Link Integration"
 }

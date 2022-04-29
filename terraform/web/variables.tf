@@ -3,6 +3,18 @@ locals {
   resource_name_suffix = terraform.workspace
 }
 
+variable "aws_profile" {
+  type        = string
+  description = "AWS Profile"
+  default     = "aws_api_gateway_mtls"
+}
+
+variable "aws_region" {
+  type        = string
+  description = "AWS Region"
+  default     = "us-east-1"
+}
+
 variable "mtls_gateway" {
   type = object({
     mtls_domain_name                               = string
@@ -31,15 +43,6 @@ variable "web_image" {
 }
 
 variable "web_subnet_id" {
-  type = string
-}
-
-variable "aws_profile" {
-  type    = string
-  default = "aws_api_gateway_mtls"
-}
-
-variable "aws_region" {
-  type    = string
-  default = "us-east-1"
+  type        = string
+  description = "ID of the Subnet for the web service"
 }
