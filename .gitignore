@@ -12,6 +12,7 @@ __pycache__/
 .terraform/
 dgimeno.s3.tfbackend
 terraform.tfvars
+terraform/test/
 
 # Certs
 certs/

@@ -1,7 +1,15 @@
+import os
 from loguru import logger
 from cryptography.x509.ocsp import OCSPCertStatus
-from .ocsp import get_ocsp_cert_status
-from .iam import IAMPolicyEffect, IAM_POLICY_VERSION
+from mtls_authorizer.ocsp import get_ocsp_cert_status
+from mtls_authorizer.iam import (
+    IAMPolicyEffect,
+    IAM_POLICY_VERSION,
+    generate_request_api_invoke_resource
+)
+
+
+AWS_REGION = os.environ["AWS_REGION"]
 
 
 def lambda_handler(event, context):
@@ -13,8 +21,10 @@ def lambda_handler(event, context):
     logger.info(f"Event: {event}")
     logger.info(f"Context: {context}")
 
-    # Get method path of event
-    event_method_arn = event["methodArn"]
+    # Get values from event
+    event_account_id = event["requestContext"]["accountId"]
+    event_api_id = event["requestContext"]["apiId"]
+    event_stage = event["requestContext"]["stage"]
     event_client_cert_pem = event["requestContext"]["identity"]["clientCert"]["clientCertPem"]
 
     # Get OCSP status
@@ -24,6 +34,12 @@ def lambda_handler(event, context):
     auth_policy_effect = IAMPolicyEffect.ALLOW if client_cert_status is OCSPCertStatus.GOOD else IAMPolicyEffect.DENY
 
     # Construct auth policy for return
+    auth_policy_resource = generate_request_api_invoke_resource(
+        aws_region=AWS_REGION,
+        aws_account_id=event_account_id,
+        api_gateway_id=event_api_id,
+        api_gateway_stage=event_stage
+    )
     auth_policy = {
         "policyDocument": {
             "Version": IAM_POLICY_VERSION,
@@ -31,9 +47,9 @@ def lambda_handler(event, context):
                 {
                     "Action": "execute-api:Invoke",
                     "Effect": auth_policy_effect.value,
-                    "Resource": event_method_arn,
+                    "Resource": auth_policy_resource,
                 }
-            ]
+            ],
         }
     }
 
